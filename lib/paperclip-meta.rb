@@ -1,4 +1,15 @@
 module Paperclip
+  # allow models to turn off using identify on non-image attachments
+  class Options
+    alias :original_initialize, :initialize
+    attr_accessor :generate_meta
+    
+    def initialize(attachment, hash)
+      original_initialize( attachment, hash )
+      @generate_meta = hash[:generate_meta] || true
+    end
+  end
+      
   class Attachment
     alias :original_post_process_styles :post_process_styles
     alias :original_save :save
@@ -19,12 +30,16 @@ module Paperclip
       if instance.respond_to?(:"#{name}_meta=")
         meta = {}
 
-        @queued_for_write.each do |style, file|
-          begin
-            geo = Geometry.from_file file
-            meta[style] = {:width => geo.width.to_i, :height => geo.height.to_i, :size => File.size(file) }
-          rescue NotIdentifiedByImageMagickError => e
-            meta[style] = {}
+        # skip attachments with :generate_meta => false for non-image files
+        # can't just look at absence of styles - we want meta info for images with no thumbnailing.
+        if @options.generate_meta 
+          @queued_for_write.each do |style, file|
+            begin
+              geo = Geometry.from_file file
+              meta[style] = {:width => geo.width.to_i, :height => geo.height.to_i, :size => File.size(file) }
+            rescue NotIdentifiedByImageMagickError => e
+              meta[style] = {}
+            end
           end
         end
 
