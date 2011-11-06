@@ -6,7 +6,7 @@ module Paperclip
     
     def initialize(attachment, hash)
       original_initialize( attachment, hash )
-      @generate_meta = ( hash[:generate_meta].nil? true : hash[:generate_meta] )
+      @generate_meta = ( hash[:generate_meta].nil? ? true : hash[:generate_meta] )
     end
   end
       
