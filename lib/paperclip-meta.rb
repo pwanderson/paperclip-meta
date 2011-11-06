@@ -1,7 +1,7 @@
 module Paperclip
   # allow models to turn off using identify on non-image attachments
   class Options
-    alias :original_initialize, :initialize
+    alias :original_initialize :initialize
     attr_accessor :generate_meta
     
     def initialize(attachment, hash)
